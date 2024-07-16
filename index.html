@@ -201,7 +201,7 @@
       .then(data => {
         if (data.success) {
           sessionStorage.setItem('username', electionNumber); // username 저장
-          window.location.href = 'voting.html'; // 선거 페이지로 이동
+          window.location.href = '/vote-app-beta/voting.html'; // 선거 페이지로 이동
         } else {
           alert(data.message); // 오류 메시지 표시
         }
@@ -225,7 +225,7 @@
     function checkAdminPassword() {
       const adminPassword = document.getElementById('adminPassword').value;
       if (adminPassword === '3691') {
-        window.location.href = 'admin.html';
+        window.location.href = '/vote-app-beta/admin.html';
       } else {
         document.getElementById('adminError').style.display = 'block';
       }

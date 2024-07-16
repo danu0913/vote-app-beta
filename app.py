@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import json
 import os
 
-app = Flask(__name__, static_folder='public')
+app = Flask(__name__, static_folder='.')
 
 # 파일 경로 설정
 valid_numbers_file = os.path.join(app.static_folder, 'validElectionNumbers.json')
