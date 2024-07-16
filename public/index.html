@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>항존직 선거</title>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #2c3e50;
+    }
+    .grid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      box-sizing: border-box;
+      background-color: #34495e;
+      border-radius: 10px;
+      position: relative;
+    }
+    .register {
+      width: 100%;
+      text-align: center;
+    }
+    .site__logo {
+      width: 100%;
+      height: auto;
+      max-width: 200px;
+      margin-bottom: 20px;
+    }
+    .form__field {
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    input[type="text"], input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    input[type="text"] {
+      color: white;
+      background-color: #333;
+    }
+    h2 {
+      color: white;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    label {
+      display: block;
+      color: white;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .form__field label {
+      margin-bottom: 15px;
+    }
+    p {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 10px;
+      color: white;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      .grid {
+        padding: 10px;
+      }
+      .form__field {
+        margin-bottom: 10px;
+      }
+      p {
+        font-size: 12px;
+      }
+    }
+    #adminPrompt {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #34495e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+    #adminPrompt input {
+      width: calc(100% - 20px);
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    #adminPrompt button {
+      padding: 10px;
+      background-color: #1abc9c;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+    #adminPrompt button:hover {
+      background-color: #16a085;
+    }
+    .admin-trigger {
+      padding: 10px;
+      display: block;
+    }
+    .footer-text {
+      margin-top: 10px;
+      font-size: 12px;
+      color: white;
+    }
+    .admin-mode-title {
+      color: white;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body class="align">
+  <div class="grid align__item">
+    <div class="register">
+      <img src="./el-images/new-logo.png" alt="오정교회 로고" class="site__logo">
+      <h2>항존직 선거</h2>
+      <form id="electionForm" class="form">
+        <div class="form__field">
+          <label for="electionNumber">ㅣ선거번호ㅣ</label>
+          <input type="text" id="electionNumber" placeholder="선거번호 입력 (6자리)" required>
+        </div>
+        <div class="form__field">
+          <input type="submit" value="전자 투표 입장">
+        </div>
+      </form>
+      <div id="adminPrompt">
+        <div class="admin-mode-title">ㅣ관리자 모드ㅣ</div>
+        <input type="password" id="adminPassword" placeholder="비밀번호 입력" required>
+        <button onclick="checkAdminPassword()">확인</button>
+        <p id="adminError" style="color: red; display: none;">비밀번호를 확인하세요!</p>
+      </div>
+      <p class="footer-text">Copyright © 오정교회 All rights reserved.<br>
+      대전광역시 대덕구 동산초교로 82(오정동) TEL. 042-622-6900</p>
+      <p class="admin-trigger" id="adminTrigger">Edited by 이규한</p>
+    </div>
+  </div>
+  <script>
+    let validElectionNumbers = [];
+    let adminClickCount = 0;
+    let adminClickTimeout;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('validElectionNumbers.json')
+        .then(response => response.json())
+        .then(data => {
+          validElectionNumbers = data.numbers;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('서버에서 유효한 선거번호를 불러오는 중 오류가 발생했습니다.');
+        });
+    });
+
+    document.getElementById('electionForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // 기본 폼 제출 동작 방지
+      const electionNumberField = document.getElementById('electionNumber');
+      const electionNumber = electionNumberField.value;
+
+      if (electionNumber.length !== 6) {
+        alert('선거번호를 확인해주세요!');
+        return;
+      }
+
+      fetch('http://localhost:3000/login', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ electionNumber: electionNumber })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          sessionStorage.setItem('username', electionNumber); // username 저장
+          window.location.href = 'voting.html'; // 선거 페이지로 이동
+        } else {
+          alert(data.message); // 오류 메시지 표시
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('서버 오류가 발생했습니다.');
+      });
+    });
+
+    document.getElementById('adminTrigger').addEventListener('click', function() {
+      adminClickCount++;
+      clearTimeout(adminClickTimeout);
+      adminClickTimeout = setTimeout(() => { adminClickCount = 0; }, 300);
+
+      if (adminClickCount === 2) {
+        document.getElementById('adminPrompt').style.display = 'block';
+      }
+    });
+
+    function checkAdminPassword() {
+      const adminPassword = document.getElementById('adminPassword').value;
+      if (adminPassword === '3691') {
+        window.location.href = 'admin.html';
+      } else {
+        document.getElementById('adminError').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

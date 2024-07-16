@@ -1,0 +1,83 @@
+[
+    {
+        "electionNumber": "098655",
+        "votes": {
+            "1": [
+                "candidate1"
+            ],
+            "2": [
+                "candidate13"
+            ],
+            "3": [
+                "candidate61"
+            ]
+        }
+    },
+    {
+        "electionNumber": "369100",
+        "votes": {
+            "1": [
+                "candidate1",
+                "candidate2",
+                "candidate3",
+                "candidate46",
+                "candidate8"
+            ],
+            "2": [
+                "candidate13",
+                "candidate16",
+                "candidate17",
+                "candidate19",
+                "candidate20",
+                "candidate23",
+                "candidate26",
+                "candidate33",
+                "candidate35",
+                "candidate36"
+            ],
+            "3": [
+                "candidate52",
+                "candidate53",
+                "candidate56",
+                "candidate68",
+                "candidate71",
+                "candidate72"
+            ]
+        }
+    },
+    {
+        "electionNumber": "118004",
+        "votes": {
+            "1": [
+                "candidate2",
+                "candidate5"
+            ],
+            "2": [
+                "candidate13",
+                "candidate16"
+            ],
+            "3": [
+                "candidate61",
+                "candidate65",
+                "candidate69"
+            ]
+        }
+    },
+    {
+        "electionNumber": "127051",
+        "votes": {
+            "1": [
+                "candidate1",
+                "candidate8"
+            ],
+            "2": [
+                "candidate13",
+                "candidate16"
+            ],
+            "3": [
+                "candidate61",
+                "candidate64"
+            ]
+        }
+    }
+]

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>투표 페이지</title>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #2c3e50;
+    }
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background-color: #34495e;
+      border-radius: 10px;
+      padding: 20px;
+      box-sizing: border-box;
+      color: white;
+      text-align: center;
+    }
+    .candidate-list {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .candidate-item {
+      background-color: #3c4d5e;
+      border-radius: 10px;
+      padding: 10px;
+      width: 30%;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s;
+    }
+    .candidate-item img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+    .candidate-item label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .candidate-item input[type="checkbox"] {
+      display: none;
+    }
+    .candidate-item.selected {
+      background-color: #1abc9c;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #1abc9c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #16a085;
+    }
+    .selected-count {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    #confirmationModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #34495e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      color: white;
+    }
+    #confirmationModal h3 {
+      margin-top: 0;
+    }
+    #confirmationModal ul {
+      list-style: none;
+      padding: 0;
+    }
+    #confirmationModal li {
+      background-color: rgb(230, 215, 160); /* 기존 색상 유지, 투명도 적용 */
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 18px;
+      font-weight: bold; /* 글자 굵게 */
+      color: rgb(60, 57, 57); /* 흰색, 투명도 50% */
+    }
+    #confirmationModal button {
+      margin-top: 20px; /* 간격을 늘려서 구분 */
+      padding: 10px 20px;
+      background-color: #16a085; /* 버튼 색상 약간 더 어둡게 */
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #confirmationModal button:hover {
+      background-color: #1abc9c; /* 호버 시 밝게 */
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="set1">
+    <h2>1세트: 장로 투표</h2>
+    <form id="set1Form">
+      <ul class="candidate-list" id="candidateList1">
+        <!-- 후보자 리스트 삽입 -->
+      </ul>
+      <div class="selected-count" id="selectedCount1">선택된 후보자: 0/5</div>
+      <button type="submit">다음</button>
+    </form>
+  </div>
+
+  <div class="container" id="set2" style="display:none;">
+    <h2>2세트: 권사 투표</h2>
+    <form id="set2Form">
+      <ul class="candidate-list" id="candidateList2">
+        <!-- 후보자 리스트 삽입 -->
+      </ul>
+      <div class="selected-count" id="selectedCount2">선택된 후보자: 0/10</div>
+      <button type="submit">다음</button>
+    </form>
+  </div>
+
+  <div class="container" id="set3" style="display:none;">
+    <h2>3세트: 안수집사 투표</h2>
+    <form id="set3Form">
+      <ul class="candidate-list" id="candidateList3">
+        <!-- 후보자 리스트 삽입 -->
+      </ul>
+      <div class="selected-count" id="selectedCount3">선택된 후보자: 0/6</div>
+      <button type="submit">완료</button>
+    </form>
+  </div>
+
+  <div id="confirmationModal">
+    <h3>현재 선택한 후보자</h3>
+    <ul id="currentSelection"></ul>
+    <button id="confirmVote">확인</button>
+  </div>
+
+  <script>
+    const electionNumber = sessionStorage.getItem('username');
+    let candidates = [];
+
+    fetch('candidates.json')
+      .then(response => response.json())
+      .then(data => {
+        candidates = data.candidates;
+        loadCandidates(1, 12, 'candidateList1');
+        loadCandidates(13, 36, 'candidateList2');
+        loadCandidates(49, 72, 'candidateList3');
+        updateSelectedCount(1, 5);
+        updateSelectedCount(2, 10);
+        updateSelectedCount(3, 6);
+      })
+      .catch(error => console.error('Error loading candidates:', error));
+
+    function loadCandidates(startId, endId, listId) {
+      const list = document.getElementById(listId);
+      list.innerHTML = '';
+      for (let i = startId; i <= endId; i++) {
+        const candidate = candidates.find(c => c.id === `candidate${i}`);
+        if (candidate) {
+          const listItem = document.createElement('li');
+          listItem.classList.add('candidate-item');
+          listItem.innerHTML = `
+            <label for="${candidate.id}">
+              <img src="assets/images/${candidate.id}.jpg" alt="${candidate.number}번: ${candidate.name}">
+              <div>${candidate.number}번: ${candidate.name}</div>
+            </label>
+            <input type="checkbox" id="${candidate.id}" name="candidate" value="${candidate.name}">
+          `;
+          list.appendChild(listItem);
+        }
+      }
+    }
+
+    document.getElementById('set1Form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      handleVoteSubmission(1, 5);
+    });
+
+    document.getElementById('set2Form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      handleVoteSubmission(2, 10);
+    });
+
+    document.getElementById('set3Form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      handleVoteSubmission(3, 6);
+    });
+
+    function handleVoteSubmission(setNumber, maxVotes) {
+      const formId = `set${setNumber}Form`;
+      const selectedCandidates = document.querySelectorAll(`#${formId} input[name="candidate"]:checked`);
+      const votes = Array.from(selectedCandidates).map(candidate => candidate.value);
+
+      if (votes.length <= maxVotes) {
+        const currentSelectionList = document.getElementById('currentSelection');
+        currentSelectionList.innerHTML = '';
+        votes.forEach(vote => {
+          const listItem = document.createElement('li');
+          listItem.textContent = vote;
+          currentSelectionList.appendChild(listItem);
+        });
+
+        document.getElementById('confirmationModal').style.display = 'block';
+
+        document.getElementById('confirmVote').onclick = function() {
+          document.getElementById('confirmationModal').style.display = 'none';
+          fetch('http://localhost:3000/vote', { 
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ electionNumber, votes, setNumber })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert(`${setNumber}세트 투표가 완료되었습니다.`);
+              document.getElementById(`set${setNumber}`).style.display = 'none';
+              if (setNumber < 3) {
+                document.getElementById(`set${setNumber + 1}`).style.display = 'block';
+              } else {
+                window.location.href = 'index.html';
+              }
+            } else {
+              alert(data.message); // 오류 메시지 표시
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('서버 오류가 발생했습니다.');
+          });
+        };
+      } else {
+        alert(`최대 ${maxVotes}명까지 선택 가능합니다.`);
+      }
+    }
+
+    function updateSelectedCount(setNumber, maxVotes) {
+      const formId = `set${setNumber}Form`;
+      const selectedCountId = `selectedCount${setNumber}`;
+      const checkboxes = document.querySelectorAll(`#${formId} input[type="checkbox"]`);
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const selectedCount = document.querySelectorAll(`#${formId} input[name="candidate"]:checked`).length;
+          document.getElementById(selectedCountId).textContent = `선택된 후보자: ${selectedCount}/${maxVotes}`;
+
+          if (selectedCount > maxVotes) {
+            alert(`최대 ${maxVotes}명까지 선택 가능합니다.`);
+            checkbox.checked = false;
+          } else {
+            const parent = checkbox.closest('.candidate-item');
+            if (checkbox.checked) {
+              parent.classList.add('selected');
+            } else {
+              parent.classList.remove('selected');
+            }
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
